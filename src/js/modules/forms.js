@@ -100,6 +100,9 @@ const forms = (state) => {
                 })
                 .finally(() => {
                     clearInputs();
+                    for (let key in state) {
+                        delete state[key];
+                    }
                     setTimeout(() => {
                         statusMessage.remove();
                         // стосит none

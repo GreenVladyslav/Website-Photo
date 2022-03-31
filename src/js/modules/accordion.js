@@ -4,6 +4,15 @@ const accordion = (triggersSelector) => {
     btns.forEach(btn => {
         btn.addEventListener('click', function() {
             // подсвечивается розовым вообщем стили
+
+            if (!this.classList.contains('active-style')){
+                btns.forEach(btn => {
+                    btn.classList.remove('active-style');
+                    btn.nextElementSibling.classList.remove('active-content');
+                    btn.nextElementSibling.style.maxHeight = '0px';
+                });
+            }
+            
             this.classList.toggle('active-style');
             this.nextElementSibling.classList.toggle('active-content');
 
@@ -18,15 +27,6 @@ const accordion = (triggersSelector) => {
 };
 
 export default accordion;
-
-
-
-
-
-
-
-
-
 
 
 
@@ -66,3 +66,56 @@ export default accordion;
 // };
 
 // export default accordion;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// const accordion = (triggerSelector) => {
+//     const heading = document.querySelectorAll(triggerSelector);
+   
+//     const { marginBottom } = window.getComputedStyle(heading[0]);
+   
+//     function changeClasses(selector, state1, state2) {
+//       selector.classList[state1]('fadeInDown');
+//       selector.classList[state2]('fadeOutUp');
+//     }
+   
+//     heading.forEach((item) => {
+//       const next = item.nextElementSibling;
+//       next.classList.add('animated');
+   
+//       next.style.display = 'none';
+   
+//       item.addEventListener('click', () => {
+//         next.classList.toggle('active');
+   
+//         if (!next.classList.contains('active')) {
+//           changeClasses(next, 'remove', 'add');
+//           item.classList.remove('ui-accordion-header-active');
+   
+//           setTimeout(() => {
+//             next.style.display = 'none';
+//           }, 500);
+//         } else {
+//           changeClasses(next, 'add', 'remove');
+//           next.style.display = 'block';
+   
+//           item.style.marginBottom = marginBottom;
+//           item.classList.add('ui-accordion-header-active');
+//         }
+//       });
+//     });
+//   };
+//   export default accordion;

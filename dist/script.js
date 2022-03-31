@@ -2,6 +2,58 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
+/***/ "./src/js/modules/accordion.js":
+/*!*************************************!*\
+  !*** ./src/js/modules/accordion.js ***!
+  \*************************************/
+/***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+const accordion = triggersSelector => {
+  const btns = document.querySelectorAll(triggersSelector);
+  btns.forEach(btn => {
+    btn.addEventListener('click', function () {
+      // подсвечивается розовым вообщем стили
+      this.classList.toggle('active-style');
+      this.nextElementSibling.classList.toggle('active-content');
+
+      if (this.classList.contains('active-style')) {
+        // = должен занимать элемент плюс padding в пикселях то элемент будет плавно разварачиватся засчет transition в css
+        this.nextElementSibling.style.maxHeight = this.nextElementSibling.scrollHeight + 80 + "px";
+      } else {
+        this.nextElementSibling.style.maxHeight = '0px';
+      }
+    });
+  });
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (accordion); // const accordion = (triggersSelector, itemsSelector) => {
+//     const btns = document.querySelectorAll(triggersSelector),
+//           blocks = document.querySelectorAll(itemsSelector);
+//           через css 906-916
+//         blocks.forEach(block => {
+//             block.classList.add('animated', 'fadeInDown');
+//         });
+//         btns.forEach(btn => {
+//             btn.addEventListener('click', function() {
+//                 // я обращаюсь к элементу на которыой кликнули(в действии)
+//                 if (!this.classList.contains('active')) {
+//                     // если у элемента на котороый нажал польщователь нету класса активности то мы ему добавим
+//                     // а у всех остальных котороые не подходят под описание мы уберем
+//                     btns.forEach(btn => {
+//                         btn.classList.remove('active', 'active-style');
+//                     });
+//                     // если у этого элемента нету класса активности то мы берем всех остальные кнопки которыое подходят 
+//                     // под этот триггер мы их переберем и каждой кнопки 
+//                     this.classList.add('active', 'active-style');
+//                 }
+//             });
+//         });
+// };
+// export default accordion;
+
+/***/ }),
+
 /***/ "./src/js/modules/calc.js":
 /*!********************************!*\
   !*** ./src/js/modules/calc.js ***!
@@ -873,6 +925,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _modules_calc__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./modules/calc */ "./src/js/modules/calc.js");
 /* harmony import */ var _modules_filter__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./modules/filter */ "./src/js/modules/filter.js");
 /* harmony import */ var _modules_pictureSize__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./modules/pictureSize */ "./src/js/modules/pictureSize.js");
+/* harmony import */ var _modules_accordion__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./modules/accordion */ "./src/js/modules/accordion.js");
+
 
 
 
@@ -897,7 +951,9 @@ window.addEventListener('DOMContentLoaded', () => {
   (0,_modules_showMoreStyles__WEBPACK_IMPORTED_MODULE_5__["default"])('.button-styles', '#styles .row');
   (0,_modules_calc__WEBPACK_IMPORTED_MODULE_6__["default"])('#size', '#material', '#options', '.promocode', '.calc-price');
   (0,_modules_filter__WEBPACK_IMPORTED_MODULE_7__["default"])();
-  (0,_modules_pictureSize__WEBPACK_IMPORTED_MODULE_8__["default"])('.sizes-block');
+  (0,_modules_pictureSize__WEBPACK_IMPORTED_MODULE_8__["default"])('.sizes-block'); // accordion('.accordion-heading', '.accordion-block'); через CSS
+
+  (0,_modules_accordion__WEBPACK_IMPORTED_MODULE_9__["default"])('.accordion-heading');
 });
 }();
 /******/ })()

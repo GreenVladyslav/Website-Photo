@@ -267,6 +267,122 @@ const checkTextInputs = selector => {
 
 /***/ }),
 
+/***/ "./src/js/modules/drop.js":
+/*!********************************!*\
+  !*** ./src/js/modules/drop.js ***!
+  \********************************/
+/***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _services_requests__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../services/requests */ "./src/js/services/requests.js");
+
+
+const drop = () => {
+  // drag *
+  // dragend *
+  // dragenter - обьект над dropArea
+  // dropArea - это может быть любой элемент котороый воспринимает это событие
+  // dragexit *
+  // dragleave - обьект за пределами dropArea
+  // dragover - обьект зависает над dropArea 
+  // dragstart *
+  // drop - обьект отправлен в dropAre 
+  // * - затрагивать мы будем не все! такие как отмеченные срабатывают на элементе котороые мы перетскиваем
+  // и это не наш случай потомучто мы будем перетаскивать файлы из нашей файловой системы вместо того чтобы работать
+  // с какими-то DOM элементами прямо на странице то есть обозначенные элементы никога не сработают в нашей задаче 
+  // [name="upload" на всю страницу input ??
+  const fileInputs = document.querySelectorAll('[name="upload"]'); // массив событий (сам написал)
+
+  ['dragenter', 'dragleave', 'dragover', 'drop'].forEach(eventName => {
+    fileInputs.forEach(input => {
+      input.addEventListener(eventName, preventDefaults, false);
+    });
+  });
+
+  function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation(); // stopPropagation() - который останавливает всплытие (bubbling) события “клик” к родительским элементам.
+  } // индикатор который даст понять пользователю что он перетаскивает над нужной областью
+  // передаем элемент которыой нам нужно подстветить 
+
+
+  function hightlight(item) {
+    item.closest('.file_upload').style.border = "5px solid yellow";
+    item.closest('.file_upload').style.backgroundColor = "rgba(0,0,0, .7)"; // у этого элемента находим ближайший класс
+  }
+
+  function unhightlight(item) {
+    item.closest('.file_upload').style.border = "none";
+
+    if (item.closest('.calc_form')) {
+      item.closest('.file_upload').style.backgroundColor = "#fff";
+    } else if (item.closest('.col-md-3')) {
+      item.closest('.file_upload').style.backgroundColor = "#f7e7e6";
+    } else {
+      item.closest('.file_upload').style.backgroundColor = "#ededed";
+    } // цвет модальноого окна вернуть popup_content
+    // item.closest('.file_upload').style.backgroundColor = "inherit"; наследовать
+    // item.closest('.file_upload').style.backgroundColor = "initial"; начальный
+
+  }
+
+  ['dragenter', 'dragover'].forEach(eventName => {
+    fileInputs.forEach(input => {
+      input.addEventListener(eventName, () => hightlight(input), false);
+    });
+  }); // Мы берем два события. Перебераем все файловые инпуты с которыми будем рабоать.
+  // И на каждый инпут навешиваем это событие. И ставим вот такой вот обработчки.
+  // И обратная ситуация Когда мы опутсили файл или ушли мышкой то у нас выполнится
+
+  ['dragleave', 'drop'].forEach(eventName => {
+    fileInputs.forEach(input => {
+      input.addEventListener(eventName, () => unhightlight(input), false);
+    });
+  }); // будем обрабатывать то когда пользователь скинет картинку вниз
+
+  fileInputs.forEach(input => {
+    input.addEventListener('drop', e => {
+      // В files лежат файлы которые пользователь загрузил и их можно модифицировать
+      input.files = e.dataTransfer.files; // то есть берем те файлы которые мы drag and drop -пим сейчас и просто засовываем
+      //  их в инпут котороый есть на странице 
+      //dataTransfer - это тот обьект с файлом котороый мы с вами перета- ваем и с файловой структуры
+      // есть свои методы
+
+      let dots;
+      const arr = input.files[0].name.split('.');
+      arr[0].length > 6 ? dots = "..." : dots = '.';
+      const name = arr[0].substring(0, 6) + dots + arr[1];
+      input.previousElementSibling.textContent = name;
+
+      if (input.closest('.main')) {
+        preventDefaults(e);
+        let formData = new FormData();
+        [...input.files].forEach(files => {
+          formData.append('image', files);
+          (0,_services_requests__WEBPACK_IMPORTED_MODULE_0__.postData)('assets/server.php', formData).then(res => {
+            console.log(res);
+          }).catch(() => {
+            console.log('Error');
+          });
+        });
+      }
+    });
+  });
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (drop); // 1. Во первых элементов может быть несколько мы можем выделять несколько картинках и претаскивать их в input Для этого в определнный input нам необходимо установить атрибут multiple для того чтобы он поддерживал несколько файлов ну и конечно это могу тбыть не только изображения но т любые файлы
+// 2. Для того чтобы мы могли кидать только картинки нужно для input установить multiple accept="image/*" * - значит что мы можем заргужать любые типы картинок jpg и так далее 
+// {/* <div class=file_upload>
+// <button type=button>Загрузить фотографию</button>
+// <div>Файл не выбран</div>
+// <input type=file name=upload multiple accept="image/*">
+// </div> */}
+// 3. В старых браузерах такая реализация с drag and drop элементом работать не будет именно поэтмоу всего нужно оставлять в ручную ввод файлов то есть по старинке с какой папки загрузить файл
+// 4. Мы можем отправить файл на сервер только тогда когда мы дропнули этот элемент 
+// иногда это нужно например перетащили аву профиля и даже не нажали сабмит она установилась в профель в зависимости от веб ресура это очень полезная фича и сделать это не сложно
+
+/***/ }),
+
 /***/ "./src/js/modules/filter.js":
 /*!**********************************!*\
   !*** ./src/js/modules/filter.js ***!
@@ -720,107 +836,110 @@ const scrolling = upSelector => {
       upElem.classList.add('fadeOut');
       upElem.classList.remove('fadeIn');
     }
-  }); // // Scrolling with requestAnimationFrame
-  // // window.requestAnimationFrame указывает браузеру на то, что вы хотите произвести анимацию,
-  // //и просит его запланировать перерисовку на следующем кадре анимации.
-  // // [href^="#"] я ишу все ссылки котороые начинаются с шарпа #
-  // let links = document.querySelectorAll('[href^="#"]'),
-  //     speed = 0.3;
-  //     links.forEach(link => {
-  //         link.addEventListener('click', function(event) {
-  //             event.preventDefault();
-  //             let widthTop = document.documentElement.scrollTop,
-  //                 hash = this.hash,
-  //                 toBlock = document.querySelector(this.hash).getBoundingClientRect().top,
-  //                 start = null;
-  //                 // getBoundingClientRect это метод которыой позволет получить доступ
-  //                 //  к свойствам например к свойству top
-  //             requestAnimationFrame(step);
-  //             function step(time) {
-  //                 if (start === null) {
-  //                     start = time;
-  //                 }
-  //                 // первый ли раз у меня запускается анимаия 
-  //                 let progress = time - start,
-  //                 // r - Отвечает за количество пикселей на которое нам необходимо пролистать в течение этой операции
-  //                     r = (toBlock < 0 ? Math.max(widthTop - progress/speed, widthTop + toBlock)
-  //                     : Math.min(widthTop + progress/speed, widthTop + toBlock));
-  //                     document.documentElement.scrollTo(0, r);
-  //                     // когда наша анимация должна остановится
-  //                     if (r != widthTop + toBlock) {
-  //                         requestAnimationFrame(step);
-  //                     } else {
-  //                         location.hash = hash; 
-  //                     }
-  //                     // теперь функция step будет сама себя запускать пока не выполнится 
-  //                     // это условие и пока собственно не остановится анимация
-  //             }
-  //         });
-  //     });
-  //  Pure js scrolling
-  // Реализация плавного скролла
+  }); // Scrolling with requestAnimationFrame
+  // window.requestAnimationFrame указывает браузеру на то, что вы хотите произвести анимацию,
+  //и просит его запланировать перерисовку на следующем кадре анимации.
+  // [href^="#"] я ишу все ссылки котороые начинаются с шарпа #
 
-  const element = document.documentElement,
-        body = document.body; // функция подсчета сколько нужно пролистать и как это сделать
+  let links = document.querySelectorAll('[href^="#"]'),
+      speed = 0.1; // скорость скролла
 
-  const calcScroll = () => {
-    // этот элемент ссылка 
-    upElem.addEventListener('click', function (event) {
-      // что (из этого будет существовать то и поподет в scrollTop)
-      // scrollTop - мы узнали какое расстояние было пролистано вниз пользователем 
-      let scrollTop = Math.round(body.scrollTop || element.scrollTop);
+  links.forEach(link => {
+    link.addEventListener('click', function (event) {
+      event.preventDefault(); // widthTop это и есть scrollTop ))
 
-      if (this.hash !== '') {
-        event.preventDefault(); // substring мы от hash получим без решокти #up > up
-        // let hashElement = document.getElementById(this.hash.substring(1));
+      let widthTop = document.documentElement.scrollTop,
+          hash = this.hash,
+          toBlock = document.querySelector(this.hash).getBoundingClientRect().top,
+          start = null; // getBoundingClientRect это метод которыой позволет получить доступ
+      //  к свойствам например к свойству top
 
-        let hashElement = document.querySelector(this.hash),
-            // this.hash для того чтобы узнать к кому элементу мы все это листаем
-        // обозначет сколько мне езе нужно будет пролистать пикселей до родителя этого Hash элемента
-        hashElementTop = 0; // offsetParent - это свой-во обозначает тот элемент относительно
-        //которого будет позироватся hashElement то есть родитель его
+      requestAnimationFrame(step); // time автоматический аргумент, который самостоятельно приходит в функцию
 
-        while (hashElement.offsetParent) {
-          // offsetTop - позволяет нам определить а сколько пикселей осталось
-          //до верхней границы родительского элемента от hashElement
-          hashElementTop += hashElement.offsetTop;
-          hashElement = hashElement.offsetParent; // цикл позволит перебрать всех родителей элемента и узнать сколько пикселей нам нужно отлистать 
-        }
+      function step(time) {
+        if (start === null) {
+          start = time;
+        } // первый ли раз у меня запускается анимаия 
 
-        hashElementTop = Math.round(hashElementTop); // hashElementTop - сколько пикселей у нас он стоит от родительского элемента 
 
-        smoothScroll(scrollTop, hashElementTop, this.hash);
+        let progress = time - start,
+            // r - Отвечает за количество пикселей на которое нам необходимо пролистать в течение этой операции
+        r = toBlock < 0 ? Math.max(widthTop - progress / speed, widthTop + toBlock) : Math.min(widthTop + progress / speed, widthTop + toBlock); // анимация может двигатся вверх так : и в  низ
+
+        document.documentElement.scrollTo(0, r); // скролим по определенным координатам (X, Y)
+        // когда наша анимация должна остановится
+
+        if (r != widthTop + toBlock) {
+          requestAnimationFrame(step);
+        } else {
+          location.hash = hash;
+        } // теперь функция step будет сама себя запускать пока не выполнится 
+        // это условие и пока собственно не остановится анимация
+
       }
     });
-  }; // (от куда идет, куда, сам hash)
-
-
-  const smoothScroll = (from, to, hash) => {
-    let timeInterval = 1,
-        prevScrollTop,
-        speed;
-
-    if (to > from) {
-      speed = 30;
-    } else {
-      speed = -30;
-    }
-
-    let move = setInterval(function () {
-      let scrollTop = Math.round(body.scrollTop || element.scrollTop);
-
-      if (prevScrollTop === scrollTop || to > from && scrollTop >= to || to < from && scrollTop <= to) {
-        clearInterval(move);
-        history.replaceState(history.state, document.title, location.href.replace(/#.*$/g, '') + hash);
-      } else {
-        body.scrollTop += speed;
-        element.scrollTop += speed;
-        prevScrollTop = scrollTop;
-      }
-    }, timeInterval);
-  };
-
-  calcScroll();
+  }); // //  Pure js scrolling
+  // // Реализация плавного скролла
+  // const element = document.documentElement,
+  //       body = document.body;
+  // // функция подсчета сколько нужно пролистать и как это сделать
+  // const calcScroll = () => {
+  //     // этот элемент ссылка 
+  //     upElem.addEventListener('click', function(event) {
+  //         // что (из этого будет существовать то и поподет в scrollTop)
+  //         // scrollTop - мы узнали какое расстояние было пролистано вниз пользователем 
+  //         let scrollTop = Math.round(body.scrollTop || element.scrollTop);
+  //         if (this.hash !== '') {
+  //             event.preventDefault();
+  //             // substring мы от hash получим без решокти #up > up
+  //             // let hashElement = document.getElementById(this.hash.substring(1));
+  //             let hashElement = document.querySelector(this.hash),
+  //             // this.hash для того чтобы узнать к кому элементу мы все это листаем
+  //             // обозначет сколько мне езе нужно будет пролистать пикселей до родителя этого Hash элемента
+  //                 hashElementTop = 0;
+  //             // offsetParent - это свой-во обозначает тот элемент относительно
+  //             //которого будет позироватся hashElement то есть родитель его
+  //             while (hashElement.offsetParent) {
+  //                 // offsetTop - позволяет нам определить а сколько пикселей осталось
+  //                 //до верхней границы родительского элемента от hashElement
+  //                 hashElementTop += hashElement.offsetTop;
+  //                 hashElement = hashElement.offsetParent;
+  //                 // цикл позволит перебрать всех родителей элемента и узнать сколько пикселей нам нужно отлистать 
+  //             }
+  //             hashElementTop = Math.round(hashElementTop);
+  //             // hashElementTop - сколько пикселей у нас он стоит от родительского элемента 
+  //             smoothScroll(scrollTop, hashElementTop, this.hash);
+  //         }
+  //     });
+  // };
+  // // (от куда идет, куда, сам hash)
+  // const smoothScroll = (from, to, hash) => {
+  //     let timeInterval = 1,
+  //         prevScrollTop,
+  //         speed;
+  //     if (to > from) {
+  //         speed = 30;
+  //     } else {
+  //         speed = -30;
+  //     }
+  //     let move = setInterval(function() {
+  //         let scrollTop = Math.round(body.scrollTop || element.scrollTop);
+  //         if (
+  //             prevScrollTop === scrollTop ||
+  //             (to > from && scrollTop >= to) ||
+  //             (to < from && scrollTop <= to)
+  //         ) {
+  //             clearInterval(move);
+  //             // все знаки шарпа # в конце строки нашего href 
+  //             history.replaceState(history.state, document.title, location.href.replace(/#.*$/g, '') + hash);
+  //         } else {
+  //             body.scrollTop += speed;
+  //             element.scrollTop += speed;
+  //             prevScrollTop = scrollTop;
+  //         }
+  //     }, timeInterval);
+  // };
+  // calcScroll();
 };
 
 /* harmony default export */ __webpack_exports__["default"] = (scrolling);
@@ -1120,6 +1239,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _modules_accordion__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./modules/accordion */ "./src/js/modules/accordion.js");
 /* harmony import */ var _modules_burger__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./modules/burger */ "./src/js/modules/burger.js");
 /* harmony import */ var _modules_scrolling__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./modules/scrolling */ "./src/js/modules/scrolling.js");
+/* harmony import */ var _modules_drop__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./modules/drop */ "./src/js/modules/drop.js");
+
 
 
 
@@ -1152,6 +1273,7 @@ window.addEventListener('DOMContentLoaded', () => {
   (0,_modules_accordion__WEBPACK_IMPORTED_MODULE_9__["default"])('.accordion-heading');
   (0,_modules_burger__WEBPACK_IMPORTED_MODULE_10__["default"])('.burger-menu', '.burger');
   (0,_modules_scrolling__WEBPACK_IMPORTED_MODULE_11__["default"])('.pageup');
+  (0,_modules_drop__WEBPACK_IMPORTED_MODULE_12__["default"])();
 });
 }();
 /******/ })()
